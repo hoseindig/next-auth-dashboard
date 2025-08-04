@@ -5,10 +5,13 @@ import Input from "@/components/Input/Input";
 import Button from "@/components/Button/Button";
 import styles from "./auth.module.scss";
 import axios from "axios";
+import { saveUser } from "@/lib/auth";
+// import Loading from "@/components/Loading";
 
 export default function AuthPage() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const validatePhone = (value: string) => {
@@ -23,28 +26,38 @@ export default function AuthPage() {
     }
 
     try {
+      setLoading(true);
+
       const res = await axios.get(
         "https://randomuser.me/api/?results=1&nat=us"
       );
-      const user = res.data.results[0];
-      localStorage.setItem("user", JSON.stringify(user));
-      router.push("/dashboard");
+      setTimeout(() => {
+        setLoading(false);
+
+        const user = res.data.results[0];
+        saveUser(user);
+        router.push("/dashboard");
+      }, 1000);
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <h2>ورود</h2>
-      <Input
-        label="شماره موبایل"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        placeholder="مثلاً 09123456789"
-        error={error}
-      />
-      <Button onClick={handleLogin}>ورود</Button>
-    </div>
+    <>
+      <div className={styles.container}>
+        <h2>ورود</h2>
+        <Input
+          label="شماره موبایل"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="مثلاً 09123456789"
+          error={error}
+        />
+        <Button onClick={handleLogin} loading={loading}>
+          ورود
+        </Button>
+      </div>
+    </>
   );
 }
