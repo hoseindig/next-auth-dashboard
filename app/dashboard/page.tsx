@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUser } from "@/lib/auth";
 import {
   Box,
   Card,
@@ -15,6 +14,8 @@ import {
   LinearProgress,
   Paper,
   Fade,
+  Button,
+  CircularProgress,
 } from "@mui/material";
 import { styled, keyframes } from "@mui/material/styles";
 import EmailIcon from "@mui/icons-material/Email";
@@ -23,6 +24,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import CakeIcon from "@mui/icons-material/Cake";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { getUser, clearUser } from "@/lib/auth";
 import { User } from "@/types/user";
 
 // Keyframe animation for card entrance
@@ -37,6 +40,7 @@ const slideIn = keyframes`
   }
 `;
 
+// Styled components for a modern look
 const DashboardContainer = styled(Container)(({ theme }) => ({
   minHeight: "100vh",
   background: "linear-gradient(135deg, #6b7280 0%, #a5b4fc 100%)",
@@ -84,10 +88,25 @@ const InfoRow = styled(Paper)(({ theme }) => ({
   },
 }));
 
+const LogoutButton = styled(Button)(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  fontWeight: 600,
+  borderRadius: theme.shape.borderRadius * 2,
+  textTransform: "none",
+  display: "flex",
+  gap: theme.spacing(1),
+  backgroundColor: theme.palette.error.main,
+  "&:hover": {
+    backgroundColor: theme.palette.error.dark,
+  },
+}));
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     const fetchedUser = getUser();
@@ -99,8 +118,16 @@ export default function DashboardPage() {
     }
   }, [router]);
 
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // 1-second loading
+    clearUser();
+    setLogoutLoading(false);
+    router.push("/auth");
+  };
+
   if (!user) {
-    return null; // Render nothing until user data is loaded
+    return null;
   }
 
   return (
@@ -259,6 +286,21 @@ export default function DashboardPage() {
                 Timezone: {user.location.timezone.description} (
                 {user.location.timezone.offset})
               </Typography>
+              <LogoutButton
+                fullWidth
+                variant="contained"
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                startIcon={
+                  logoutLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <LogoutIcon />
+                  )
+                }
+              >
+                {logoutLoading ? "Logging out..." : "Logout"}
+              </LogoutButton>
             </Box>
           </CardContent>
         </ProfileCard>
