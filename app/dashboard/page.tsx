@@ -164,6 +164,7 @@ export default function DashboardPage() {
                   bgcolor: "white",
                   color: "primary.main",
                   fontWeight: 500,
+                  paddingX: 2,
                 }}
               />
               <Chip
